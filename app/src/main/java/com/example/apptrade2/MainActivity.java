@@ -44,8 +44,11 @@ public class MainActivity extends AppCompatActivity {
     public final Calendar c = Calendar.getInstance();
     final int horas = c.get(Calendar.HOUR_OF_DAY);
     final int minuto = c.get(Calendar.MINUTE);
+    public static int horasTotales = 0;
+    public static int hora2;
+    public static int hora3;
 
-    Button btn,btn2,btn3;
+    Button btn,btn2,btn3,btn4;
     Spinner spinner1,spinner2,spinner3,spinner4;
     ArrayList<String> listaNombres;
     ArrayList<String> listaBuques;
@@ -135,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
         spinner4 = findViewById(R.id.text4);
         btn2 = findViewById(R.id.btn5);
         btn3 = findViewById(R.id.btn6);
+        btn4 = findViewById(R.id.btn7);
 
 
       /*  ContentValues cv1 = new ContentValues();
@@ -179,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
         ArrayAdapter<String> adaptador1 = new ArrayAdapter(this, R.layout.negrita_spinner,listaPartidas );
         spinner3.setAdapter(adaptador1);
 
+
         consultarListaNombres();
         ArrayAdapter<String> adaptador2 = new ArrayAdapter(this, R.layout.negrita_spinner,listaNombres );
         spinner1.setAdapter(adaptador2);
@@ -207,6 +212,16 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 obtenerFecha(btn3);
 
+
+            }
+        });
+
+
+        btn4.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                obtenerHora2(btn4);
 
             }
         });
@@ -269,6 +284,10 @@ public class MainActivity extends AppCompatActivity {
 
                     registro2.put("fecha", sharprefs.getString("fecha", "sin datos"));
                     bbdd.insert("datosAbance", null, registro2);
+
+                    horasTotales =  hora3 - hora2;
+
+
 
 
                     Intent i6 = new Intent(MainActivity.this, MenuPrincipalNoEditable.class);
@@ -335,7 +354,7 @@ public class MainActivity extends AppCompatActivity {
         MenuPrincipal persona3 = new MenuPrincipal();
         subpartidasList = new ArrayList<MenuPrincipal>();
 
-        //Select
+
 
 
 
@@ -413,13 +432,10 @@ public class MainActivity extends AppCompatActivity {
 
         Cursor cursor = bbdd2.rawQuery("SELECT * FROM nombresPersonas",null);
 
-        if(cursor.moveToFirst()) {
 
-
-            do {
 
                 persona1 = new MenuPrincipal();
-                persona1.setNombre(cursor.getString(0));
+                persona1.setNombre(login.usuario);
 
 
                 Log.i("nombre", "" + persona1.getNombre());
@@ -427,11 +443,9 @@ public class MainActivity extends AppCompatActivity {
 
                 personasList.add(persona1);
 
-            }
 
-            while (cursor.moveToNext());
 
-        }
+
 
         obtenerListaNombres();
 
@@ -545,6 +559,7 @@ public class MainActivity extends AppCompatActivity {
 
                 //Muestro la hora con el formato deseado
                 String hora = (horaFormateada + DOS_PUNTOS + minutoFormateado);
+                hora2 = hourOfDay + minute;
 
                 SharedPreferences sharprefs = getSharedPreferences("ArchivoSP", getApplicationContext().MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharprefs.edit();
@@ -559,6 +574,35 @@ public class MainActivity extends AppCompatActivity {
 
         recogerHora.show();
     }
+
+    private void obtenerHora2(View view){
+        TimePickerDialog recogerHora = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                //Formateo el hora obtenido: antepone el 0 si son menores de 10
+                String horaFormateada =  (hourOfDay < 10)? String.valueOf(CERO + hourOfDay) : String.valueOf(hourOfDay);
+                //Formateo el minuto obtenido: antepone el 0 si son menores de 10
+                String minutoFormateado = (minute < 10)? String.valueOf(CERO + minute):String.valueOf(minute);
+                //Obtengo el valor a.m. o p.m., dependiendo de la selección del usuario
+
+
+                //Muestro la hora con el formato deseado
+                String hora = (horaFormateada + DOS_PUNTOS + minutoFormateado);
+                hora3 = Integer.parseInt(horaFormateada) + Integer.parseInt(minutoFormateado);
+
+
+
+            }
+
+
+
+        }, horas, minuto, true);
+
+        recogerHora.show();
+    }
+
+
+
 
 
     public void obtenerFecha(View v) {

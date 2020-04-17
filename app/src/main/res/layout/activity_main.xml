@@ -89,7 +89,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:background="@drawable/btn"
-        android:text="Hora de finalizción"
+        android:text="Hora de incio"
         android:textColor="#ffffff"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -113,6 +113,22 @@
         app:layout_constraintTop_toBottomOf="@id/btn5"
         app:layout_constraintVertical_bias="0.041" />
 
+
+    <Button
+        android:id="@+id/btn7"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/btn"
+        android:text="Hora de fin"
+        android:textColor="#ffffff"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.008"
+        app:layout_constraintStart_toStartOf="@+id/btn5"
+        app:layout_constraintTop_toBottomOf="@id/btn5"
+        app:layout_constraintVertical_bias="0.354" />
+
     <Button
         android:id="@+id/btn"
         android:layout_width="150dp"
@@ -122,10 +138,10 @@
         android:textColor="#ffffff"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.659"
+        app:layout_constraintHorizontal_bias="0.697"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn6"
-        app:layout_constraintVertical_bias="0.397" />
+        app:layout_constraintTop_toBottomOf="@+id/btn7"
+        app:layout_constraintVertical_bias="0.463" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

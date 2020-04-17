@@ -57,7 +57,7 @@ public class MenuPrincipalNoEditable extends AppCompatActivity {
 
                 Intent i = new Intent(MenuPrincipalNoEditable.this, MainActivity.class);
                 startActivityForResult(i,0);
-                finish();
+
 
 
 
@@ -70,7 +70,7 @@ public class MenuPrincipalNoEditable extends AppCompatActivity {
 
                 Intent i = new Intent(MenuPrincipalNoEditable.this, ListadoPartes.class);
                 startActivityForResult(i,0);
-                finish();
+
 
 
 

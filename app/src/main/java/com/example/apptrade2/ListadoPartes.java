@@ -54,7 +54,7 @@ public class ListadoPartes extends AppCompatActivity {
 
         final Cursor consulta = bbdd.rawQuery("SELECT * FROM datosAbance ", null);
 
-
+        text.setText(String.valueOf(MainActivity.hora2));
 
 
 
