@@ -1,8 +1,13 @@
 package com.example.apptrade2;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -10,14 +15,22 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 
 import org.w3c.dom.Text;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+
+import javax.xml.datatype.Duration;
 
 public class MenuPrincipalNoEditable extends AppCompatActivity {
 
@@ -29,7 +42,13 @@ public class MenuPrincipalNoEditable extends AppCompatActivity {
     private static String subpartida;
     private static String hora;
     private static String fecha;
-    TextView text1,text2,text3,text4,text5,text6;
+    private static String sumaHoras;
+    TextView text1,text2,text3,text4,text5,text6,text7;
+
+    ArrayList<String> lista;
+    TextView text;
+
+    ListView list;
 
 
     @Override
@@ -43,11 +62,7 @@ public class MenuPrincipalNoEditable extends AppCompatActivity {
         btn1 = findViewById(R.id.btn222);
         btn2 = findViewById(R.id.btn333);
         text1 = findViewById(R.id.text1);
-        text2 = findViewById(R.id.text2);
-        text3 = findViewById(R.id.text3);
-        text4 = findViewById(R.id.text4);
-        text5 = findViewById(R.id.text5);
-        text6 = findViewById(R.id.text6);
+        list = findViewById(R.id.list2);
 
 
 
@@ -79,30 +94,63 @@ public class MenuPrincipalNoEditable extends AppCompatActivity {
 
         btn.setClosedOnTouchOutside(true);
 
-        final Cursor consulta = bbdd.rawQuery("SELECT * FROM datosAbance ", null);
+
+
+
+
+        final Cursor consulta = bbdd.rawQuery("SELECT * FROM datosAbanceDef ", null);
+
+
+
+
+        /*horaTotal = sumarHoras(MainActivity.diferencia,horaTemporal);*/
+
+        /*text.setText("Hoy llevas trabajadas: " + tipoHora.format(MainActivity.diferencia)+ " H");*/
+
+
+
+
+
+        lista = llenar_lista();
+
+
+        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, lista);
+
+        list.setAdapter(adapter);
+
+    }
+
+
+
+
+    public ArrayList llenar_lista(){
+
+        ArrayList <String> lista = new ArrayList<>();
+        final ConnectSqlite admin = new ConnectSqlite(this, ConnectSqlite.DATABASE_NAME, null, ConnectSqlite.DATABASE_VERSION);
+        final SQLiteDatabase bbdd = admin.getWritableDatabase();
+
+        final Cursor consulta = bbdd.rawQuery("SELECT * FROM datosAbanceDef ", null);
 
         if (consulta.moveToLast()) {
 
-            nombre = consulta.getString(0);
-            buque = consulta.getString(2);
-            partida = consulta.getString(3);
-            subpartida = consulta.getString(4);
-            hora = consulta.getString(5);
-            fecha = consulta.getString(6);
+            do{
 
-            text1.setText(nombre);
-            text2.setText(buque);
-            text3.setText(partida);
-            text4.setText(subpartida);
-            text5.setText(hora);
-            text6.setText(fecha);
+                lista.add( "\n"+"Nombre: " + consulta.getString(0) + "\n" + "Buque: " + consulta.getString(2) + "\n " + "Partida: "  + consulta.getString(3) + "\n " + "Subpartida: " + consulta.getString(4) + "\n "+ "Duración: " + consulta.getString(7) + "\n" + "Fecha: " + consulta.getString(6) + "\n" );
 
+            }while(consulta.moveToPrevious());
 
         }
 
 
 
+        return lista;
     }
+
+
+
+
+
+
 
 
     @Override

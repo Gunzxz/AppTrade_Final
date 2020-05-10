@@ -1,6 +1,7 @@
 package com.example.apptrade2;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.DatePickerDialog;
@@ -15,6 +16,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -26,6 +28,7 @@ import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -132,6 +135,9 @@ public class MenuPrincipal extends AppCompatActivity {
         final SQLiteDatabase bbdd = admin.getWritableDatabase();
         final SQLiteDatabase bbdd2 = admin.getReadableDatabase();
 
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+
 
         btn = findViewById(R.id.btn);
         spinner1 = findViewById(R.id.text1);
@@ -167,9 +173,44 @@ public class MenuPrincipal extends AppCompatActivity {
 
 
 
-        consultarListaPartidas();
-        ArrayAdapter<String> adaptador1 = new ArrayAdapter(this, R.layout.negrita_spinner,listaPartidas );
-        spinner3.setAdapter(adaptador1);
+        spinner2.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                consultarListaPartidas();
+                ArrayAdapter<String> adaptador1 = new ArrayAdapter(MenuPrincipal.this, R.layout.negrita_spinner, listaPartidas);
+                spinner3.setAdapter(adaptador1);
+            }
+
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+
+            }
+
+        });
+
+
+
+        spinner3.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                consultarListaSubapartidas();
+                ArrayAdapter<String> adaptador4 = new ArrayAdapter(MenuPrincipal.this, R.layout.negrita_spinner,listaSubpartidas );
+                spinner4.setAdapter(adaptador4);
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+
 
         consultarListaNombres();
         ArrayAdapter<String> adaptador2 = new ArrayAdapter(this, R.layout.negrita_spinner,listaNombres );
@@ -179,9 +220,7 @@ public class MenuPrincipal extends AppCompatActivity {
         ArrayAdapter<String> adaptador3 = new ArrayAdapter(this, R.layout.negrita_spinner,listaBuques );
         spinner2.setAdapter(adaptador3);
 
-        consultarListaSubapartidas();
-        ArrayAdapter<String> adaptador4 = new ArrayAdapter(this, R.layout.negrita_spinner,listaSubpartidas );
-        spinner4.setAdapter(adaptador4);
+
 
         btn2.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -202,6 +241,9 @@ public class MenuPrincipal extends AppCompatActivity {
 
             }
         });
+
+
+
 
 
 
@@ -266,6 +308,17 @@ public class MenuPrincipal extends AppCompatActivity {
                     registro2.put("fecha", sharprefs.getString("fecha", "sin datos"));
                     bbdd.update("datosAbance", registro2, null, null);
 
+                    try {
+
+                        MainActivity.diferencia = MainActivity.calcularDiferencia(MainActivity.tipoHora.parse(MainActivity.hora2),MainActivity.tipoHora.parse(MainActivity.hora3));
+                        registro2.put("sumaHoras", String.valueOf(MainActivity.tipoHora.format(MainActivity.diferencia)));
+                        bbdd.update("datosAbance",registro2,null,null);
+
+                    } catch (ParseException e) {
+
+                        e.printStackTrace();
+                    }
+
 
                     Intent i6 = new Intent(MenuPrincipal.this, MenuPrincipalNoEditable.class);
                     startActivityForResult(i6, 0);
@@ -293,7 +346,7 @@ public class MenuPrincipal extends AppCompatActivity {
 
         //Select
 
-        Cursor cursor = bbdd2.rawQuery("SELECT * FROM nombresPartidas",null);
+        Cursor cursor = bbdd2.rawQuery("SELECT * FROM nombresPartidas WHERE FK_Buque = '" + spinner2.getSelectedItem().toString() + "'",null);
 
 
         if(cursor.moveToFirst()) {
@@ -330,7 +383,7 @@ public class MenuPrincipal extends AppCompatActivity {
 
         //Select
 
-        Cursor cursor = bbdd2.rawQuery("SELECT * FROM nombresSubpartidas",null);
+        Cursor cursor = bbdd2.rawQuery("SELECT * FROM nombresSubpartidas WHERE FK_Buque = '" + spinner2.getSelectedItem().toString() + "' AND FK_Partida = '" + spinner3.getSelectedItem().toString() + "'" ,null);
 
         if(cursor.moveToFirst()) {
 
@@ -410,7 +463,7 @@ public class MenuPrincipal extends AppCompatActivity {
             do {
 
                 persona1 = new MenuPrincipal();
-                persona1.setNombre(cursor.getString(0));
+                persona1.setNombre(login.usuario);
 
 
                 Log.i("nombre", "" + persona1.getNombre());
@@ -585,8 +638,7 @@ public class MenuPrincipal extends AppCompatActivity {
                     editor.commit();
 
                 }
-            }
-                    ,dia,mes,ano);
+            },ano,mes,dia);
             datePickerDialog.show();
         }
 
@@ -597,7 +649,7 @@ public class MenuPrincipal extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
-        getMenuInflater().inflate(R.menu.menu_bar, menu);
+        getMenuInflater().inflate(R.menu.menu_bar2, menu);
         return true;
     }
 
@@ -611,11 +663,7 @@ public class MenuPrincipal extends AppCompatActivity {
                 Intent i4 = new Intent(MenuPrincipal.this, login.class);
                 startActivityForResult(i4,0);
                 finish();
-            case R.id.item2:
 
-                Intent i5 = new Intent(MenuPrincipal.this, ListadoPartes.class);
-                startActivityForResult(i5,0);
-                finish();
 
 
 

@@ -1,6 +1,7 @@
 package com.example.apptrade2;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.DatePickerDialog;
@@ -15,6 +16,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -26,10 +28,14 @@ import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity<Public> extends AppCompatActivity {
 
 
     public  String nombre,nombre2;
@@ -45,8 +51,12 @@ public class MainActivity extends AppCompatActivity {
     final int horas = c.get(Calendar.HOUR_OF_DAY);
     final int minuto = c.get(Calendar.MINUTE);
     public static int horasTotales = 0;
-    public static int hora2;
-    public static int hora3;
+    public static String hora2;
+    public static String hora3;
+   public static String horass = "";
+   public static String minutoss = "";
+    public static SimpleDateFormat tipoHora = new SimpleDateFormat("HH:mm",Locale.US);
+    public static Date diferencia;
 
     Button btn,btn2,btn3,btn4;
     Spinner spinner1,spinner2,spinner3,spinner4;
@@ -130,6 +140,8 @@ public class MainActivity extends AppCompatActivity {
         final SQLiteDatabase bbdd = admin.getWritableDatabase();
         final SQLiteDatabase bbdd2 = admin.getReadableDatabase();
 
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
 
         btn = findViewById(R.id.btn);
         spinner1 = findViewById(R.id.text1);
@@ -179,9 +191,44 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        consultarListaPartidas();
-        ArrayAdapter<String> adaptador1 = new ArrayAdapter(this, R.layout.negrita_spinner,listaPartidas );
-        spinner3.setAdapter(adaptador1);
+
+    spinner2.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+            consultarListaPartidas();
+            ArrayAdapter<String> adaptador1 = new ArrayAdapter(MainActivity.this, R.layout.negrita_spinner, listaPartidas);
+            spinner3.setAdapter(adaptador1);
+        }
+
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+
+
+        }
+
+    });
+
+
+
+    spinner3.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+            consultarListaSubapartidas();
+            ArrayAdapter<String> adaptador4 = new ArrayAdapter(MainActivity.this, R.layout.negrita_spinner,listaSubpartidas );
+            spinner4.setAdapter(adaptador4);
+
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+
+        }
+    });
+
+
 
 
         consultarListaNombres();
@@ -192,9 +239,7 @@ public class MainActivity extends AppCompatActivity {
         ArrayAdapter<String> adaptador3 = new ArrayAdapter(this, R.layout.negrita_spinner,listaBuques );
         spinner2.setAdapter(adaptador3);
 
-        consultarListaSubapartidas();
-        ArrayAdapter<String> adaptador4 = new ArrayAdapter(this, R.layout.negrita_spinner,listaSubpartidas );
-        spinner4.setAdapter(adaptador4);
+
 
         btn2.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -225,6 +270,9 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+
+
 
 
 
@@ -283,9 +331,22 @@ public class MainActivity extends AppCompatActivity {
 
 
                     registro2.put("fecha", sharprefs.getString("fecha", "sin datos"));
+
+
+                    try {
+
+                        diferencia = calcularDiferencia(tipoHora.parse(hora2),tipoHora.parse(hora3));
+                        registro2.put("sumaHoras", String.valueOf(tipoHora.format(diferencia)));
+
+                    } catch (ParseException e) {
+
+                        e.printStackTrace();
+                    }
+
                     bbdd.insert("datosAbance", null, registro2);
 
-                    horasTotales =  hora3 - hora2;
+
+
 
 
 
@@ -305,6 +366,8 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
+
     public void consultarListaPartidas() {
 
         final ConnectSqlite admin = new ConnectSqlite(this, ConnectSqlite.DATABASE_NAME, null, ConnectSqlite.DATABASE_VERSION);
@@ -316,7 +379,7 @@ public class MainActivity extends AppCompatActivity {
         //Select
 
 
-        Cursor cursor = bbdd2.rawQuery("SELECT * FROM nombresPartidas",null);
+        Cursor cursor = bbdd2.rawQuery("SELECT * FROM nombresPartidas WHERE FK_Buque = '" + spinner2.getSelectedItem().toString() + "'",null);
 
 
         if(cursor.moveToFirst() && cursor != null) {
@@ -358,7 +421,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        Cursor cursor = bbdd2.rawQuery("SELECT * FROM nombresSubpartidas ",null);
+        Cursor cursor = bbdd2.rawQuery("SELECT * FROM nombresSubpartidas WHERE FK_Buque = '" + spinner2.getSelectedItem().toString() + "' AND FK_Partida = '" + spinner3.getSelectedItem().toString() + "'" ,null);
 
         if(cursor.moveToFirst()) {
 
@@ -457,7 +520,7 @@ public class MainActivity extends AppCompatActivity {
 
         final ConnectSqlite admin = new ConnectSqlite(this, ConnectSqlite.DATABASE_NAME, null, ConnectSqlite.DATABASE_VERSION);
         final SQLiteDatabase bbdd2 = admin.getReadableDatabase();
-        final Cursor consulta = bbdd2.rawQuery("SELECT * FROM nombresPartidas ", null);
+        //final Cursor consulta = bbdd2.rawQuery("SELECT * FROM nombresPartidas ", null);
 
         listaPartidas = new ArrayList<String>();
         listaPartidas.add("Selecciona una opción...");
@@ -558,12 +621,12 @@ public class MainActivity extends AppCompatActivity {
                 //Obtengo el valor a.m. o p.m., dependiendo de la selección del usuario
 
                 //Muestro la hora con el formato deseado
-                String hora = (horaFormateada + DOS_PUNTOS + minutoFormateado);
-                hora2 = hourOfDay + minute;
+                hora2 = (horaFormateada + DOS_PUNTOS + minutoFormateado);
+
 
                 SharedPreferences sharprefs = getSharedPreferences("ArchivoSP", getApplicationContext().MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharprefs.edit();
-                editor.putString("hora", hora);
+                editor.putString("hora", hora2);
                 editor.commit();
 
             }
@@ -580,15 +643,21 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                 //Formateo el hora obtenido: antepone el 0 si son menores de 10
-                String horaFormateada =  (hourOfDay < 10)? String.valueOf(CERO + hourOfDay) : String.valueOf(hourOfDay);
+                String horaFormateada2 =  (hourOfDay < 10)? String.valueOf(CERO + hourOfDay) : String.valueOf(hourOfDay);
                 //Formateo el minuto obtenido: antepone el 0 si son menores de 10
-                String minutoFormateado = (minute < 10)? String.valueOf(CERO + minute):String.valueOf(minute);
+                String minutoFormateado2 = (minute < 10)? String.valueOf(CERO + minute):String.valueOf(minute);
                 //Obtengo el valor a.m. o p.m., dependiendo de la selección del usuario
 
 
+
                 //Muestro la hora con el formato deseado
-                String hora = (horaFormateada + DOS_PUNTOS + minutoFormateado);
-                hora3 = Integer.parseInt(horaFormateada) + Integer.parseInt(minutoFormateado);
+                hora3 = (horaFormateada2 + DOS_PUNTOS + minutoFormateado2);
+
+
+
+
+
+
 
 
 
@@ -600,6 +669,18 @@ public class MainActivity extends AppCompatActivity {
 
         recogerHora.show();
     }
+
+    public static Date calcularDiferencia(Date dateInicio, Date dateFinal) {
+        long milliseconds = dateFinal.getTime() - dateInicio.getTime();
+        int minutes = (int) ((milliseconds / (1000 * 60)) % 60);
+        int hours = (int) ((milliseconds / (1000 * 60 * 60)) % 24);
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.MINUTE, minutes);
+        c.set(Calendar.HOUR_OF_DAY, hours);
+        return c.getTime();
+
+    }
+
 
 
 
@@ -621,8 +702,6 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
 
-
-
                     SharedPreferences sharprefs = getSharedPreferences("ArchivoSP", getApplicationContext().MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharprefs.edit();
                     editor.putString("fecha", dayOfMonth+"/"+(monthOfYear+1)+"/"+year);
@@ -630,7 +709,7 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             }
-                    ,dia,mes,ano);
+                    ,ano,mes,dia);
             datePickerDialog.show();
         }
 
@@ -641,7 +720,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
-        getMenuInflater().inflate(R.menu.menu_bar, menu);
+        getMenuInflater().inflate(R.menu.menu_bar2, menu);
         return true;
     }
 
@@ -654,11 +733,6 @@ public class MainActivity extends AppCompatActivity {
 
                 Intent i4 = new Intent(MainActivity.this, login.class);
                 startActivityForResult(i4,0);
-                finish();
-            case R.id.item2:
-
-                Intent i5 = new Intent(MainActivity.this, MenuPrincipalNoEditable.class);
-                startActivityForResult(i5,0);
                 finish();
 
 

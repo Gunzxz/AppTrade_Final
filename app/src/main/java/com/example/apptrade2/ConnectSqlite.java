@@ -22,7 +22,8 @@ public class ConnectSqlite extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
 
-        db.execSQL("CREATE TABLE IF NOT EXISTS datosAbance (nombreReal VARCHAR(40), nombre VARCHAR(40), nombreBuq VARCHAR(20) , partida VARCHAR(20), subpartida VARCHAR(20), horas INTEGER(6), fecha INTEGER(15), sumaHoras INTEGER(20)); ");
+        db.execSQL("CREATE TABLE IF NOT EXISTS datosAbance (nombreReal VARCHAR(40), nombre VARCHAR(40), nombreBuq VARCHAR(20) , partida VARCHAR(20), subpartida VARCHAR(20), horas INTEGER(6), fecha INTEGER(15), sumaHoras VARCHAR(20)); ");
+        db.execSQL("CREATE TABLE IF NOT EXISTS datosAbanceDef (nombreReal VARCHAR(40), nombre VARCHAR(40), nombreBuq VARCHAR(20) , partida VARCHAR(20), subpartida VARCHAR(20), horas INTEGER(6), fecha INTEGER(15), sumaHoras VARCHAR(20)); ");
         db.execSQL("CREATE TABLE IF NOT EXISTS nombresPartidas (nombre VARCHAR(40))");
         db.execSQL("CREATE TABLE IF NOT EXISTS nombresPersonas (nombre VARCHAR(50))");
         db.execSQL("CREATE TABLE IF NOT EXISTS nombresBuques (nombre VARCHAR(50))");

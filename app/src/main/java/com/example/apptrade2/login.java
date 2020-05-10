@@ -67,12 +67,12 @@ public class login extends AppCompatActivity {
         final ConnectSqlite admin = new ConnectSqlite(this, ConnectSqlite.DATABASE_NAME, null, ConnectSqlite.DATABASE_VERSION);
         final SQLiteDatabase bbdd = admin.getWritableDatabase();
 
-      /*ContentValues registro = new ContentValues();
+      ContentValues registro = new ContentValues();
 
         registro.put("usuario", "egarcia");
         registro.put("pass", "1234$");
 
-        bbdd.insert("usuarios", null, registro);*/
+        bbdd.insert("usuarios", null, registro);
 
 
 
