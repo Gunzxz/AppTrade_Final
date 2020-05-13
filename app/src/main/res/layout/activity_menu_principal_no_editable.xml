@@ -55,7 +55,7 @@
         android:id="@+id/btn333"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:fab_label="Editar un parte"
+        app:fab_label="Ver partes"
         app:fab_colorNormal="#000000"
         android:src="@drawable/ic_mas3"
         app:menu_colorNormal="#3F51B5"

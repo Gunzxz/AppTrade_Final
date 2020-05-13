@@ -53,8 +53,8 @@ public class MainActivity<Public> extends AppCompatActivity {
     public static int horasTotales = 0;
     public static String hora2;
     public static String hora3;
-   public static String horass = "";
-   public static String minutoss = "";
+    public static String horass = "";
+    public static String minutoss = "";
     public static SimpleDateFormat tipoHora = new SimpleDateFormat("HH:mm",Locale.US);
     public static Date diferencia;
 
@@ -346,6 +346,7 @@ public class MainActivity<Public> extends AppCompatActivity {
                     bbdd.insert("datosAbance", null, registro2);
 
 
+                    Toast.makeText(MainActivity.this, "Los datos se ha guardado correctamente.", Toast.LENGTH_SHORT).show();
 
 
 
@@ -622,6 +623,7 @@ public class MainActivity<Public> extends AppCompatActivity {
 
                 //Muestro la hora con el formato deseado
                 hora2 = (horaFormateada + DOS_PUNTOS + minutoFormateado);
+                btn2.setText(hora2);
 
 
                 SharedPreferences sharprefs = getSharedPreferences("ArchivoSP", getApplicationContext().MODE_PRIVATE);
@@ -652,12 +654,7 @@ public class MainActivity<Public> extends AppCompatActivity {
 
                 //Muestro la hora con el formato deseado
                 hora3 = (horaFormateada2 + DOS_PUNTOS + minutoFormateado2);
-
-
-
-
-
-
+                btn4.setText(hora3);
 
 
 
@@ -706,6 +703,9 @@ public class MainActivity<Public> extends AppCompatActivity {
                     SharedPreferences.Editor editor = sharprefs.edit();
                     editor.putString("fecha", dayOfMonth+"/"+(monthOfYear+1)+"/"+year);
                     editor.commit();
+
+                    btn3.setText(dayOfMonth+"/"+(monthOfYear+1)+"/"+year);
+
 
                 }
             }

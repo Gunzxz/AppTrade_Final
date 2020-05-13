@@ -29,8 +29,11 @@ import android.widget.Toast;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class MenuPrincipal extends AppCompatActivity {
 
@@ -48,12 +51,14 @@ public class MenuPrincipal extends AppCompatActivity {
     public final Calendar c = Calendar.getInstance();
     final int horas = c.get(Calendar.HOUR_OF_DAY);
     final int minuto = c.get(Calendar.MINUTE);
-    int hora2 = 0;
-    int minuto2 = 0;
-    public  int horafinal;
-    public  int minutofinal;
+    public static String hora2;
+    public static String hora3;
+    public static String horass = "";
+    public static String minutoss = "";
+    public static SimpleDateFormat tipoHora = new SimpleDateFormat("HH:mm", Locale.US);
+    public static Date diferencia;
 
-    Button btn,btn2,btn3;
+    Button btn,btn2,btn3,btn4;
     Spinner spinner1,spinner2,spinner3,spinner4;
     ArrayList<String> listaNombres;
     ArrayList<String> listaBuques;
@@ -146,6 +151,7 @@ public class MenuPrincipal extends AppCompatActivity {
         spinner4 = findViewById(R.id.text4);
         btn2 = findViewById(R.id.btn5);
         btn3 = findViewById(R.id.btn6);
+        btn4 = findViewById(R.id.btn7);
 
 
 
@@ -169,6 +175,10 @@ public class MenuPrincipal extends AppCompatActivity {
 
         cv4.put("nombre", "Subpartidas1");
         bbdd.insert("nombresSubpartidas", null, cv4);*/
+
+        final Cursor consulta2 = bbdd.rawQuery("SELECT * FROM datosAbance ", null);
+
+
 
 
 
@@ -242,6 +252,15 @@ public class MenuPrincipal extends AppCompatActivity {
             }
         });
 
+        btn4.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                obtenerHora2(btn4);
+
+            }
+        });
+
 
 
 
@@ -310,8 +329,8 @@ public class MenuPrincipal extends AppCompatActivity {
 
                     try {
 
-                        MainActivity.diferencia = MainActivity.calcularDiferencia(MainActivity.tipoHora.parse(MainActivity.hora2),MainActivity.tipoHora.parse(MainActivity.hora3));
-                        registro2.put("sumaHoras", String.valueOf(MainActivity.tipoHora.format(MainActivity.diferencia)));
+                        diferencia = calcularDiferencia(tipoHora.parse(hora2),tipoHora.parse(hora3));
+                        registro2.put("sumaHoras", String.valueOf(tipoHora.format(diferencia)));
                         bbdd.update("datosAbance",registro2,null,null);
 
                     } catch (ParseException e) {
@@ -320,9 +339,15 @@ public class MenuPrincipal extends AppCompatActivity {
                     }
 
 
-                    Intent i6 = new Intent(MenuPrincipal.this, MenuPrincipalNoEditable.class);
-                    startActivityForResult(i6, 0);
 
+
+
+                    Toast.makeText(MenuPrincipal.this, "Los datos se han actualizado correctamente", Toast.LENGTH_SHORT).show();
+
+
+
+                    Intent i6 = new Intent(MenuPrincipal.this, ListadoPartes.class);
+                    startActivityForResult(i6, 0);
 
 
                 }
@@ -346,10 +371,11 @@ public class MenuPrincipal extends AppCompatActivity {
 
         //Select
 
+
         Cursor cursor = bbdd2.rawQuery("SELECT * FROM nombresPartidas WHERE FK_Buque = '" + spinner2.getSelectedItem().toString() + "'",null);
 
 
-        if(cursor.moveToFirst()) {
+        if(cursor.moveToFirst() && cursor != null) {
 
 
             do {
@@ -367,6 +393,9 @@ public class MenuPrincipal extends AppCompatActivity {
 
             while (cursor.moveToNext());
 
+            cursor.close();
+            bbdd2.close();
+
         }
 
         obtenerListaPartidas();
@@ -381,7 +410,9 @@ public class MenuPrincipal extends AppCompatActivity {
         MenuPrincipal persona3 = new MenuPrincipal();
         subpartidasList = new ArrayList<MenuPrincipal>();
 
-        //Select
+
+
+
 
         Cursor cursor = bbdd2.rawQuery("SELECT * FROM nombresSubpartidas WHERE FK_Buque = '" + spinner2.getSelectedItem().toString() + "' AND FK_Partida = '" + spinner3.getSelectedItem().toString() + "'" ,null);
 
@@ -457,25 +488,20 @@ public class MenuPrincipal extends AppCompatActivity {
 
         Cursor cursor = bbdd2.rawQuery("SELECT * FROM nombresPersonas",null);
 
-        if(cursor.moveToFirst()) {
 
 
-            do {
-
-                persona1 = new MenuPrincipal();
-                persona1.setNombre(login.usuario);
+        persona1 = new MenuPrincipal();
+        persona1.setNombre(login.usuario);
 
 
-                Log.i("nombre", "" + persona1.getNombre());
+        Log.i("nombre", "" + persona1.getNombre());
 
 
-                personasList.add(persona1);
+        personasList.add(persona1);
 
-            }
 
-            while (cursor.moveToNext());
 
-        }
+
 
         obtenerListaNombres();
 
@@ -487,7 +513,7 @@ public class MenuPrincipal extends AppCompatActivity {
 
         final ConnectSqlite admin = new ConnectSqlite(this, ConnectSqlite.DATABASE_NAME, null, ConnectSqlite.DATABASE_VERSION);
         final SQLiteDatabase bbdd2 = admin.getReadableDatabase();
-        final Cursor consulta = bbdd2.rawQuery("SELECT * FROM nombresPartidas ", null);
+        //final Cursor consulta = bbdd2.rawQuery("SELECT * FROM nombresPartidas ", null);
 
         listaPartidas = new ArrayList<String>();
         listaPartidas.add("Selecciona una opción...");
@@ -533,6 +559,7 @@ public class MenuPrincipal extends AppCompatActivity {
         final ConnectSqlite admin = new ConnectSqlite(this, ConnectSqlite.DATABASE_NAME, null, ConnectSqlite.DATABASE_VERSION);
         final SQLiteDatabase bbdd2 = admin.getReadableDatabase();
         final Cursor consulta = bbdd2.rawQuery("SELECT * FROM nombresBuques ", null);
+        final Cursor consulta2 = bbdd2.rawQuery("SELECT * FROM nombresBuques WHERE nombre = 'ESG' ", null);
 
         listaBuques = new ArrayList<String>();
         listaBuques.add("Selecciona una opción...");
@@ -587,21 +614,15 @@ public class MenuPrincipal extends AppCompatActivity {
                 //Obtengo el valor a.m. o p.m., dependiendo de la selección del usuario
 
                 //Muestro la hora con el formato deseado
-                String hora = (horaFormateada + DOS_PUNTOS + minutoFormateado);
+                hora2 = (horaFormateada + DOS_PUNTOS + minutoFormateado);
+                btn2.setText(hora2);
 
-                Calendar calendario = Calendar.getInstance();
-
-                hora2 = calendario.get(Calendar.HOUR_OF_DAY);
-                minuto2 = calendario.get(Calendar.MINUTE);
-
-
-                horafinal = hora2 - Integer.parseInt(horaFormateada);
-                minutofinal = minuto2 - Integer.parseInt(minutoFormateado);
 
                 SharedPreferences sharprefs = getSharedPreferences("ArchivoSP", getApplicationContext().MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharprefs.edit();
-                editor.putString("hora", hora);
+                editor.putString("hora", hora2);
                 editor.commit();
+
 
             }
             //Estos valores deben ir en ese orden
@@ -612,10 +633,52 @@ public class MenuPrincipal extends AppCompatActivity {
         recogerHora.show();
     }
 
+    private void obtenerHora2(View view){
+        TimePickerDialog recogerHora = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                //Formateo el hora obtenido: antepone el 0 si son menores de 10
+                String horaFormateada2 =  (hourOfDay < 10)? String.valueOf(CERO + hourOfDay) : String.valueOf(hourOfDay);
+                //Formateo el minuto obtenido: antepone el 0 si son menores de 10
+                String minutoFormateado2 = (minute < 10)? String.valueOf(CERO + minute):String.valueOf(minute);
+                //Obtengo el valor a.m. o p.m., dependiendo de la selección del usuario
+
+
+
+                //Muestro la hora con el formato deseado
+                hora3 = (horaFormateada2 + DOS_PUNTOS + minutoFormateado2);
+                btn4.setText(hora3);
+
+
+
+            }
+
+
+
+        }, horas, minuto, true);
+
+        recogerHora.show();
+    }
+
+    public static Date calcularDiferencia(Date dateInicio, Date dateFinal) {
+        long milliseconds = dateFinal.getTime() - dateInicio.getTime();
+        int minutes = (int) ((milliseconds / (1000 * 60)) % 60);
+        int hours = (int) ((milliseconds / (1000 * 60 * 60)) % 24);
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.MINUTE, minutes);
+        c.set(Calendar.HOUR_OF_DAY, hours);
+        return c.getTime();
+
+    }
+
+
+
+
+
 
     public void obtenerFecha(View v) {
         if(v==btn3){
-            final Calendar c = Calendar.getInstance();
+            final Calendar c= Calendar.getInstance();
 
             //Almacenamos en variables la información del dia, el mes y el año
 
@@ -626,19 +689,19 @@ public class MenuPrincipal extends AppCompatActivity {
             // Despues llamamos al AlertDialog del selector de fecha.
 
             DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
-
                 @Override
                 public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-
-
 
                     SharedPreferences sharprefs = getSharedPreferences("ArchivoSP", getApplicationContext().MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharprefs.edit();
                     editor.putString("fecha", dayOfMonth+"/"+(monthOfYear+1)+"/"+year);
                     editor.commit();
 
+                    btn3.setText(dayOfMonth+"/"+(monthOfYear+1)+"/"+year);
+
                 }
-            },ano,mes,dia);
+            }
+                    ,ano,mes,dia);
             datePickerDialog.show();
         }
 

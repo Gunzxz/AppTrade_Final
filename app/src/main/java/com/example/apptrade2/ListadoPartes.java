@@ -5,6 +5,9 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlarmManager;
+import android.app.Dialog;
+import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -19,6 +22,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -42,6 +46,7 @@ public class ListadoPartes extends AppCompatActivity {
     public static Date horaTotal ;
     public static Date horaTemporal;
     public static String date = "00:00";
+    AlarmManager planificarAlarma;
 
     ArrayList<String> lista;
     TextView text;
@@ -161,6 +166,9 @@ public class ListadoPartes extends AppCompatActivity {
 
 
 
+
+
+
     public ArrayList llenar_lista(){
 
         ArrayList <String> lista = new ArrayList<>();
@@ -214,15 +222,56 @@ public class ListadoPartes extends AppCompatActivity {
                 final ConnectSqlite admin = new ConnectSqlite(this, ConnectSqlite.DATABASE_NAME, null, ConnectSqlite.DATABASE_VERSION);
                 final SQLiteDatabase bbdd = admin.getWritableDatabase();
 
-                bbdd.execSQL("INSERT INTO datosAbanceDef(nombreReal, nombre , nombreBuq, partida, subpartida, horas, fecha, sumaHoras) SELECT nombreReal, nombre, nombreBuq, partida, subpartida, horas, fecha, sumaHoras FROM datosAbance");
-                bbdd.execSQL("DELETE FROM datosAbance");
 
-                finish();
-                Intent i2 = new Intent(ListadoPartes.this, ListadoPartes.class);
-                startActivityForResult(i2,0);
+                AlertDialog.Builder builder = new AlertDialog.Builder(ListadoPartes.this);
+                builder.setMessage("Estos datos no se podrán editar una vez estén sincronizados, ¿Seguro que desea continuar? ")
+                        .setPositiveButton("SI", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                                bbdd.execSQL("INSERT INTO datosAbanceDef(nombreReal, nombre , nombreBuq, partida, subpartida, horas, fecha, sumaHoras) SELECT nombreReal, nombre, nombreBuq, partida, subpartida, horas, fecha, sumaHoras FROM datosAbance");
+                                bbdd.execSQL("DELETE FROM datosAbance");
+
+                                finish();
+                                Intent i2 = new Intent(ListadoPartes.this, ListadoPartes.class);
+                                startActivityForResult(i2,0);
+
+                                Calendar calendar = Calendar.getInstance();
+
+                                calendar.set(Calendar.HOUR_OF_DAY,14);
+                                calendar.set(Calendar.MINUTE,10);
+                                calendar.set(Calendar.SECOND,0);
 
 
-        }
+
+                                Intent i = new Intent(ListadoPartes.this, Notification_receiver.class);
+
+                                PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(),100,i,PendingIntent.FLAG_UPDATE_CURRENT);
+
+                                AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+
+                                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),AlarmManager.INTERVAL_DAY,pendingIntent);
+
+
+
+
+                            }
+                        })
+                        .setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                            }
+                        });
+
+                builder.create();
+                builder.show();
+
+
+            }
+
+
+
+
+
 
 
 
